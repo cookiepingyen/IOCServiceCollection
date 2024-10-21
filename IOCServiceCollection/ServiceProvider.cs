@@ -6,11 +6,7 @@ using System.Threading.Tasks;
 
 namespace IOCServiceCollection
 {
-    internal class Program
+    public class ServiceProvider
     {
-        static void Main(string[] args)
-        {
-
-        }
     }
 }

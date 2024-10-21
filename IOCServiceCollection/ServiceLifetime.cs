@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace IOCServiceCollection
 {
-    internal class Program
+    public enum ServiceLifetime
     {
-        static void Main(string[] args)
-        {
-
-        }
+        Scoped,
+        Singleton,
+        Transient
     }
 }
