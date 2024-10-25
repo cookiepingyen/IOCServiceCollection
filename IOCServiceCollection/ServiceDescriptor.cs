@@ -36,6 +36,10 @@ namespace IOCServiceCollection
             {
                 return _implementationInstance;
             }
+            set
+            {
+                _implementationInstance = value;
+            }
         }
 
         public ServiceDescriptor(Type serviceType, Type implementationType, ServiceLifetime lifetime)

@@ -8,13 +8,18 @@ namespace IOCServiceCollection
 {
     public class ServiceCollection
     {
-        private readonly List<ServiceDescriptor> _descriptors = new List<ServiceDescriptor>();
         private bool _isReadOnly;
-        private Dictionary<Type, object> dictiontry = new Dictionary<Type, object>();
+        public Dictionary<Type, ServiceDescriptor> dictiontry = new Dictionary<Type, ServiceDescriptor>();
 
-        public int Count => _descriptors.Count;
+        public int Count => dictiontry.Count;
 
         public bool IsReadOnly => _isReadOnly;
+
+
+        public ServiceCollection AddSingleton<Ttype>()
+        {
+            return AddSingleton(typeof(Ttype), typeof(Ttype));
+        }
 
         public ServiceCollection AddSingleton<Ttype, TService>()
         {
@@ -71,6 +76,19 @@ namespace IOCServiceCollection
             var descriptor = new ServiceDescriptor(serviceType, implementationFactory, ServiceLifetime.Transient);
             dictiontry.Add(serviceType, descriptor);
             return this;
+        }
+
+        public ServiceCollection AddTransient<Ttype>(Func<ServiceProvider, object> implementationFactory)
+        {
+            var descriptor = new ServiceDescriptor(typeof(Ttype), implementationFactory, ServiceLifetime.Transient);
+            dictiontry.Add(typeof(Ttype), descriptor);
+            return this;
+        }
+
+
+        public ServiceProvider BuildServiceProvider()
+        {
+            return new ServiceProvider(this);
         }
     }
 }
