@@ -5,6 +5,8 @@ VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IOCServiceCollection", "IOCServiceCollection\IOCServiceCollection.csproj", "{BEF81C99-BC10-4744-8926-0CABDABAF6B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalculatorByInjection", "CalculatorByInjection\CalculatorByInjection.csproj", "{BA3977B9-8A37-42C8-AC34-4715EF55415D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{BEF81C99-BC10-4744-8926-0CABDABAF6B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEF81C99-BC10-4744-8926-0CABDABAF6B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEF81C99-BC10-4744-8926-0CABDABAF6B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA3977B9-8A37-42C8-AC34-4715EF55415D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA3977B9-8A37-42C8-AC34-4715EF55415D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA3977B9-8A37-42C8-AC34-4715EF55415D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA3977B9-8A37-42C8-AC34-4715EF55415D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

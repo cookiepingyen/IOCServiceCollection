@@ -1,12 +1,15 @@
-﻿using System;
+﻿using IOCServiceCollection.Test;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace IOCServiceCollection
 {
-    public class ServiceProvider
+    public class ServiceProvider : IServiceProvider
     {
         private ServiceCollection _services;
         public ServiceProvider(ServiceCollection services)
@@ -31,7 +34,7 @@ namespace IOCServiceCollection
                     }
                     else
                     {
-                        return (T)Activator.CreateInstance(descriptor.ImplementationType);
+                        return (T)CreateInstance(descriptor.ImplementationType);
                     }
 
                 // 3. Singleton: 
@@ -44,12 +47,14 @@ namespace IOCServiceCollection
                     }
                     else if (descriptor.ImplementationFactory != null)
                     {
+                        // HW: 把 ImplementationFactory.Invoke(this) 用一個物件容器存起來，存在ServiceProvider
+                        // 後續的取用判斷(44行)，改成用ServiceProvider 的物件容器 判斷
                         descriptor.ImplementationInstance = descriptor.ImplementationFactory.Invoke(this);
                         return (T)descriptor.ImplementationInstance;
                     }
                     else
                     {
-                        descriptor.ImplementationInstance = Activator.CreateInstance(descriptor.ImplementationType);
+                        descriptor.ImplementationInstance = (T)CreateInstance(descriptor.ImplementationType);
                         return (T)descriptor.ImplementationInstance;
                     }
                 default:
@@ -57,9 +62,43 @@ namespace IOCServiceCollection
 
             }
 
-
         }
 
 
+        public object CreateInstance(Type type)
+        {
+            // 建構元參數最多的排在最前面
+            var ctors = type.GetConstructors().OrderByDescending(x => x.GetParameters());
+            foreach (var ctor in ctors)
+            {
+                // 沒有建構元的話就Create 
+                if (ctor.GetParameters().Length == 0)
+                {
+                    return Activator.CreateInstance(type);
+                }
+
+                // 取得所有的參數並放入List
+                var parms = ctor.GetParameters();
+
+                List<object> parmsInstanceList = new List<object>();
+
+                foreach (var param in parms)
+                {
+                    MethodInfo getServiceMethod = typeof(ServiceProvider).GetMethod("GetService");
+                    getServiceMethod = getServiceMethod.MakeGenericMethod(param.ParameterType);
+                    var result = getServiceMethod.Invoke(this, null);
+                    parmsInstanceList.Add(result);
+                }
+                return Activator.CreateInstance(type, parmsInstanceList.ToArray());
+
+            }
+
+            return null;
+        }
+
+        public object GetService(Type serviceType)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

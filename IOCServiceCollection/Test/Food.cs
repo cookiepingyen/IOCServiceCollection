@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace IOCServiceCollection
 {
-    public enum ServiceLifetime
+    internal abstract class Food
     {
-        Scoped,
-        Singleton,
-        Transient
+
+        public abstract void ShowFood();
     }
 }
