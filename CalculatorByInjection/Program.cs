@@ -1,4 +1,7 @@
 ﻿using IOCServiceCollection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,36 +16,46 @@ namespace CalculatorByInjection
         /// 應用程式的主要進入點。
         /// </summary>
         /// 
-        public static ServiceProvider provider = null;
+        public static IOCServiceCollection.ServiceProvider provider = null;
 
         [STAThread]
         static void Main()
         {
-            ServiceCollection collection = new ServiceCollection();
-            collection.AddTransient<Operator, Plus>();
-            //collection.AddTransient<Operator>(x =>
-            //{
-            //    string type = x.GetService<Form1>().GetSelectedOperator();
-            //    switch (type)
-            //    {
-            //        case "Plus":
-            //            return new Plus();
-            //        case "Minus":
-            //            return new Minus();
-            //        case "Multi":
-            //            return new Multi();
-            //        default:
-            //            return new Division();
-            //    }
-            //});
-            collection.AddSingleton<Form1>();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            var config = new ConfigurationBuilder().Build();
+
+
+
+            IOCServiceCollection.ServiceCollection collection = new IOCServiceCollection.ServiceCollection();
+            collection.AddTransient<Operator>(x =>
+            {
+                Form1 f = (Form1)x.GetService<Form>();
+                string type = f.GetSelectedOperator();
+                switch (type)
+                {
+                    case "Plus":
+                        return new Plus();
+                    case "Minus":
+                        return new Minus();
+                    case "Multi":
+                        return new Multi();
+                    default:
+                        return new Division();
+                }
+            });
+            collection.AddSingleton<Form, Form1>()
+                       .AddLogging(loggingBuilder =>
+                       {
+                           loggingBuilder.AddNLog(config);
+                       });
+
             provider = collection.BuildServiceProvider();
 
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Form form = provider.GetService<Form1>();
-
+            Form form = provider.GetService<Form>();
 
             Application.Run(form);
         }

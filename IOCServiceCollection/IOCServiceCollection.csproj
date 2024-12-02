@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ServiceProviderExtensions.cs" />
     <Compile Include="Test\Animal.cs" />
     <Compile Include="Test\Dog.cs" />
     <Compile Include="Test\DogFood.cs" />
@@ -68,9 +69,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceCollection.cs" />
-    <Compile Include="ServiceDescriptor.cs" />
     <Compile Include="ServiceProvider.cs" />
-    <Compile Include="ServiceLifetimeTemp.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

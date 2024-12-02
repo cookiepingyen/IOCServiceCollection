@@ -12,14 +12,14 @@ namespace IOCServiceCollection
         static void Main(string[] args)
         {
 
-            ServiceCollection collection = new ServiceCollection();
-            collection.AddTransient<Food, DogFood>();
-            collection.AddTransient<Animal, Dog>();
+            //ServiceCollection collection = new ServiceCollection();
+            //collection.AddTransient<Food, DogFood>();
+            //collection.AddTransient<Animal, Dog>();
 
-            ServiceProvider provider = collection.BuildServiceProvider();
+            //ServiceProvider provider = collection.BuildServiceProvider();
 
-            Animal animal = provider.GetService<Animal>();
-            animal.ShowInfo();
+            //Animal animal = provider.GetService<Animal>();
+            //animal.ShowInfo();
 
             Console.ReadKey();
 

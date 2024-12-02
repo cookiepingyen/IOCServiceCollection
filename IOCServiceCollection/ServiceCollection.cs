@@ -17,71 +17,86 @@ namespace IOCServiceCollection
 
         public bool IsReadOnly => _isReadOnly;
 
-        public Microsoft.Extensions.DependencyInjection.ServiceDescriptor this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Microsoft.Extensions.DependencyInjection.ServiceDescriptor this[int index] { get => GetServiceDescriptorByIndex(index); set => throw new NotImplementedException(); }
 
-        public ServiceCollection AddSingleton<Ttype>()
+        private ServiceDescriptor GetServiceDescriptorByIndex(int index)
+        {
+            int current = 0;
+            ServiceDescriptor descriptor = null;
+            foreach (var dict in dictiontry)
+            {
+                if (current == index)
+                {
+                    descriptor = dict.Value;
+                    break;
+                }
+                current++;
+            }
+            return descriptor;
+        }
+        public IServiceCollection AddSingleton<Ttype>()
         {
             return AddSingleton(typeof(Ttype), typeof(Ttype));
         }
 
-        public ServiceCollection AddSingleton<Ttype, TService>()
+        public IServiceCollection AddSingleton<Ttype, TService>()
         {
             return AddSingleton(typeof(Ttype), typeof(TService));
         }
 
-        public ServiceCollection AddSingleton(Type serviceType, Type implementationType)
+        public IServiceCollection AddSingleton(Type serviceType, Type implementationType)
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Singleton);
             Add(descriptor);
             return this;
         }
 
-        public ServiceCollection AddSingleton(Type serviceType, Func<IServiceProvider, object> implementationFactory)
+        public IServiceCollection AddSingleton(Type serviceType, Func<IServiceProvider, object> implementationFactory)
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationFactory, ServiceLifetime.Singleton);
             Add(descriptor);
             return this;
         }
 
-        public ServiceCollection AddScoped<Ttype, TService>()
+        public IServiceCollection AddScoped<Ttype, TService>()
         {
             return AddScoped(typeof(Ttype), typeof(TService));
         }
 
-        public ServiceCollection AddScoped(Type serviceType, Type implementationType)
+        public IServiceCollection AddScoped(Type serviceType, Type implementationType)
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Scoped);
             Add(descriptor);
             return this;
         }
 
-        public ServiceCollection AddScoped(Type serviceType, Func<IServiceProvider, object> implementationFactory)
+        public IServiceCollection AddScoped(Type serviceType, Func<IServiceProvider, object> implementationFactory)
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationFactory, ServiceLifetime.Scoped);
             Add(descriptor);
             return this;
         }
 
-        public ServiceCollection AddTransient<Ttype, TService>()
+        public IServiceCollection AddTransient<Ttype, TService>()
         {
             return AddTransient(typeof(Ttype), typeof(TService));
         }
 
-        public ServiceCollection AddTransient(Type serviceType, Type implementationType)
+        public IServiceCollection AddTransient(Type serviceType, Type implementationType)
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             Add(descriptor);
             return this;
         }
 
-        public ServiceCollection AddTransient(Type serviceType, Func<IServiceProvider, object> implementationFactory)
+        public IServiceCollection AddTransient(Type serviceType, Func<IServiceProvider, object> implementationFactory)
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationFactory, ServiceLifetime.Transient);
             Add(descriptor);
             return this;
         }
 
-        public ServiceCollection AddTransient<Ttype>(Func<IServiceProvider, object> implementationFactory)
+        public IServiceCollection AddTransient<Ttype>(Func<IServiceProvider, object> implementationFactory)
         {
             var descriptor = new ServiceDescriptor(typeof(Ttype), implementationFactory, ServiceLifetime.Transient);
             Add(descriptor);
@@ -111,7 +126,10 @@ namespace IOCServiceCollection
 
         public void Add(ServiceDescriptor item)
         {
-            dictiontry.Add(item.ServiceType, item);
+            if (!dictiontry.ContainsKey(item.ServiceType))
+                dictiontry.Add(item.ServiceType, item);
+            else
+                dictiontry[item.ServiceType] = item;
         }
 
         public void Clear()
