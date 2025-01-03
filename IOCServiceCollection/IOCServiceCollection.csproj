@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PresenterFactory.cs" />
     <Compile Include="ServiceProviderExtensions.cs" />
     <Compile Include="Test\Animal.cs" />
     <Compile Include="Test\Dog.cs" />

@@ -10,7 +10,7 @@ namespace IOCServiceCollection
 {
     public class ServiceCollection : IServiceCollection
     {
-        private bool _isReadOnly;
+        private bool _isReadOnly = false;
         public Dictionary<Type, ServiceDescriptor> dictiontry = new Dictionary<Type, ServiceDescriptor>();
 
         public int Count => dictiontry.Count;
@@ -34,6 +34,7 @@ namespace IOCServiceCollection
             }
             return descriptor;
         }
+
         public IServiceCollection AddSingleton<Ttype>()
         {
             return AddSingleton(typeof(Ttype), typeof(Ttype));
@@ -103,12 +104,22 @@ namespace IOCServiceCollection
             return this;
         }
 
-
         public ServiceProvider BuildServiceProvider()
         {
-            return new ServiceProvider(this);
+            ServiceProvider serviceProvider = InitinalServiceProvider();
+            return serviceProvider;
         }
 
+        private ServiceProvider InitinalServiceProvider()
+        {
+            ServiceProvider serviceProvider = new ServiceProvider(this);
+
+            // 要做到自動註冊PresenterFactory，但因為 PresenterFactory 需要有一個 serviceProvider
+            // 因此在dictiontry容器先加入一個 serviceProvider
+            dictiontry.Add(typeof(ServiceProvider), ServiceDescriptor.Singleton(typeof(ServiceProvider), serviceProvider));
+            AddSingleton<PresenterFactory, PresenterFactory>();
+            return serviceProvider;
+        }
         public int IndexOf(Microsoft.Extensions.DependencyInjection.ServiceDescriptor item)
         {
             throw new NotImplementedException();

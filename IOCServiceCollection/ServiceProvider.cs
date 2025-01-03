@@ -12,7 +12,7 @@ namespace IOCServiceCollection
 {
     public class ServiceProvider : IServiceProvider
     {
-        private ServiceCollection _services;
+        public ServiceCollection _services;
         private Dictionary<Type, object> singletonDic = new Dictionary<Type, object>();
 
         public ServiceProvider(ServiceCollection services)
