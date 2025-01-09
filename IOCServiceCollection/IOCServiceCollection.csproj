@@ -61,6 +61,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\ScopeAttribute.cs" />
+    <Compile Include="Attributes\SingletonAttribute.cs" />
+    <Compile Include="Attributes\TransientAttribute.cs" />
     <Compile Include="PresenterFactory.cs" />
     <Compile Include="ServiceProviderExtensions.cs" />
     <Compile Include="Test\Animal.cs" />

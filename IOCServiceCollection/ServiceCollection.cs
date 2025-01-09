@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using IOCServiceCollection.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +14,9 @@ namespace IOCServiceCollection
     public class ServiceCollection : IServiceCollection
     {
         private bool _isReadOnly = false;
+        private Type[] attrArr = { typeof(TransientAttribute), typeof(ScopeAttribute), typeof(SingletonAttribute) };
         public Dictionary<Type, ServiceDescriptor> dictiontry = new Dictionary<Type, ServiceDescriptor>();
+
 
         public int Count => dictiontry.Count;
 
@@ -119,6 +124,43 @@ namespace IOCServiceCollection
             dictiontry.Add(typeof(ServiceProvider), ServiceDescriptor.Singleton(typeof(ServiceProvider), serviceProvider));
             AddSingleton<PresenterFactory, PresenterFactory>();
             return serviceProvider;
+        }
+
+        public void AutoRegister(Assembly assembly)
+        {
+            List<TypeInfo> definedtypes = assembly.DefinedTypes.Where(definedtype => definedtype.CustomAttributes.Any(attr => attrArr.Contains(attr.AttributeType)))
+                                                   .ToList();
+
+            //1.優先找繼承的父類別 (因為物件導向不允許多重繼承)
+            //2.如果沒有繼承，改找interface => 因為他是ImplementedInterfaces
+            //  2-1 預設先找跟她同名的內容 用contains比對名子去找
+            //  2-2 如果沒有，則找第一個intetface
+            //3.都沒有就把自己當父類別
+            foreach (TypeInfo presenterType in definedtypes)
+            {
+                Type ipresenterType = presenterType;
+                if (presenterType.BaseType != null && presenterType.BaseType.Name != "Object")
+                {
+                    ipresenterType = presenterType.BaseType;
+                }
+                else if (presenterType.ImplementedInterfaces != null)
+                {
+                    Type similarIpresenter = presenterType.ImplementedInterfaces.Where(ipresenter => ipresenter.Name.EndsWith("Presenter")).First();
+                    Type firstInterface = presenterType.ImplementedInterfaces.First();
+                    ipresenterType = (similarIpresenter != null) ? similarIpresenter : firstInterface;
+                }
+
+                // 必須標記 Attribute 是哪一種才能加進collection
+                CustomAttributeData lifetime = presenterType.CustomAttributes.Where(attr => attrArr.Contains(attr.AttributeType)).LastOrDefault();
+                if (lifetime == null)
+                {
+                    continue;
+                }
+
+                ServiceLifetime lifttime = (lifetime.AttributeType.Name == "SingletonAttribute") ? ServiceLifetime.Singleton : ServiceLifetime.Transient;
+                ServiceDescriptor descriptor = new ServiceDescriptor(ipresenterType, presenterType, lifttime);
+                Add(descriptor);
+            }
         }
         public int IndexOf(Microsoft.Extensions.DependencyInjection.ServiceDescriptor item)
         {
