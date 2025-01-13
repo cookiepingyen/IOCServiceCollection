@@ -44,8 +44,10 @@ namespace CalculatorByInjection
                         return new Division();
                 }
             });
-            collection.AddSingleton<Form, Form1>()
-                       .AddLogging(loggingBuilder =>
+            collection.AddSingleton<Form, Form1>();
+            collection.AddSingleton<Form, Form2>();
+            collection.AddSingleton<Form, Form3>();
+            collection.AddLogging(loggingBuilder =>
                        {
                            loggingBuilder.AddNLog(config);
                        });

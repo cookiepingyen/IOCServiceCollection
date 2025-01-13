@@ -18,8 +18,14 @@ namespace IOCServiceCollection
 
         public TPresenter Create<TPresenter, TView>(TView view)
         {
-            provider._services.dictiontry.TryGetValue(typeof(TPresenter), out ServiceDescriptor descriptor);
-            return (TPresenter)Activator.CreateInstance(descriptor.ImplementationType, view);
+            provider._services.dictiontry.TryGetValue(typeof(TPresenter), out List<ServiceDescriptor> descriptors);
+            return (TPresenter)Activator.CreateInstance(descriptors.Last().ImplementationType, view);
+        }
+
+
+        public TPresenter Create<TPresenter, TView>(TView view, Func<ServiceProvider, TPresenter> implementationFactory)
+        {
+            return implementationFactory.Invoke(provider);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace IOCServiceCollection
     {
         private bool _isReadOnly = false;
         private Type[] attrArr = { typeof(TransientAttribute), typeof(ScopeAttribute), typeof(SingletonAttribute) };
-        public Dictionary<Type, ServiceDescriptor> dictiontry = new Dictionary<Type, ServiceDescriptor>();
+        public Dictionary<Type, List<ServiceDescriptor>> dictiontry = new Dictionary<Type, List<ServiceDescriptor>>();
 
 
         public int Count => dictiontry.Count;
@@ -32,7 +32,7 @@ namespace IOCServiceCollection
             {
                 if (current == index)
                 {
-                    descriptor = dict.Value;
+                    descriptor = dict.Value.Last();
                     break;
                 }
                 current++;
@@ -121,7 +121,11 @@ namespace IOCServiceCollection
 
             // 要做到自動註冊PresenterFactory，但因為 PresenterFactory 需要有一個 serviceProvider
             // 因此在dictiontry容器先加入一個 serviceProvider
-            dictiontry.Add(typeof(ServiceProvider), ServiceDescriptor.Singleton(typeof(ServiceProvider), serviceProvider));
+
+            List<ServiceDescriptor> descriptors = new List<ServiceDescriptor>();
+            descriptors.Add(ServiceDescriptor.Singleton(typeof(ServiceProvider), serviceProvider));
+
+            dictiontry.Add(typeof(ServiceProvider), descriptors);
             AddSingleton<PresenterFactory, PresenterFactory>();
             return serviceProvider;
         }
@@ -180,9 +184,17 @@ namespace IOCServiceCollection
         public void Add(ServiceDescriptor item)
         {
             if (!dictiontry.ContainsKey(item.ServiceType))
-                dictiontry.Add(item.ServiceType, item);
+            {
+                List<ServiceDescriptor> descriptorList = new List<ServiceDescriptor>();
+                descriptorList.Add(item);
+                dictiontry.Add(item.ServiceType, descriptorList);
+            }
             else
-                dictiontry[item.ServiceType] = item;
+            {
+                // 如果有存這個的 ServiceType，取出 List 加上 這個 ServiceDescriptor
+                dictiontry[item.ServiceType].Add(item);
+            }
+
         }
 
         public void Clear()

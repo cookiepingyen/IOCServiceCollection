@@ -64,16 +64,16 @@ namespace IOCServiceCollection
         public object GetService(Type serviceType)
         {
             //找不到時，可能為泛型，Enum，或是不存在
-            if (!_services.dictiontry.TryGetValue(serviceType, out ServiceDescriptor descriptor))
+            if (!_services.dictiontry.TryGetValue(serviceType, out List<ServiceDescriptor> descriptors))
             {
-                // 檢查是否為Enum
+                // 檢查是否為IEnumerable
                 if (serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 {
                     // 取得類型 IEnumerable 內的型別 ILoggerProvider
                     Type itemType = serviceType.GetGenericArguments()[0];
 
                     // 找到有注入在 ILoggerProvider 的類型(先抓第一個)
-                    if (_services.dictiontry.TryGetValue(itemType, out ServiceDescriptor genericDescriptor))
+                    if (_services.dictiontry.TryGetValue(itemType, out List<ServiceDescriptor> genericDescriptors))
                     {
                         //取得List<>
                         Type listType = typeof(List<>);
@@ -83,10 +83,12 @@ namespace IOCServiceCollection
                         IList listGenericTypeInstance = (IList)Activator.CreateInstance(listGenericType);
 
 
-                        // implemenInstance = NLogLoggerProvider
-                        object implemenInstance = GetImplementationInstance(genericDescriptor);
+                        foreach (ServiceDescriptor genericDescriptor in genericDescriptors)
+                        {
+                            object implemenInstance = GetImplementationInstance(genericDescriptor);
+                            listGenericTypeInstance.Add(implemenInstance);
+                        }
 
-                        listGenericTypeInstance.Add(implemenInstance);
 
                         // List<ShowA>
                         return listGenericTypeInstance;
@@ -105,10 +107,13 @@ namespace IOCServiceCollection
                     Type genericType = serviceType.GetGenericTypeDefinition();
 
                     //取得泛型的實作類別 Logger<T> 
-                    if (_services.dictiontry.TryGetValue(genericType, out ServiceDescriptor genericDescriptor))
+                    if (_services.dictiontry.TryGetValue(genericType, out List<ServiceDescriptor> genericDescriptors))
                     {
                         //取得泛型內的類型Form1
                         Type gt = serviceType.GetGenericArguments()[0];
+
+                        ServiceDescriptor genericDescriptor = genericDescriptors.Last();
+
                         //組裝泛型 Logger<Form1>
                         Type genericWithImplementationType = genericDescriptor.ImplementationType.MakeGenericType(gt);
 
@@ -117,7 +122,6 @@ namespace IOCServiceCollection
 
                         return GetImplementationInstance(serviceDescriptor);
                     }
-
 
                     // 沒有找到，代表注入的可能是 ILogger<Form1>，但目前找到的是 Logger<Form1>
 
@@ -128,7 +132,7 @@ namespace IOCServiceCollection
                 }
             }
 
-            return GetImplementationInstance(descriptor);
+            return GetImplementationInstance(descriptors.Last());
 
         }
 
