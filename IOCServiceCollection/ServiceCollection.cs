@@ -132,37 +132,37 @@ namespace IOCServiceCollection
 
         public void AutoRegister(Assembly assembly)
         {
+            // 必須標記 Attribute 是哪一種才能加進collection
             List<TypeInfo> definedtypes = assembly.DefinedTypes.Where(definedtype => definedtype.CustomAttributes.Any(attr => attrArr.Contains(attr.AttributeType)))
                                                    .ToList();
+            RegistorTypes(definedtypes);
+        }
 
+        public void AutoRegisterMVP(Assembly assembly)
+        {
+            List<TypeInfo> definedtypes = assembly.DefinedTypes.ToList();
+            RegistorTypes(definedtypes);
+        }
+
+        private void RegistorTypes(List<TypeInfo> definedtypes)
+        {
             //1.優先找繼承的父類別 (因為物件導向不允許多重繼承)
             //2.如果沒有繼承，改找interface => 因為他是ImplementedInterfaces
             //  2-1 預設先找跟她同名的內容 用contains比對名子去找
             //  2-2 如果沒有，則找第一個intetface
             //3.都沒有就把自己當父類別
-            foreach (TypeInfo presenterType in definedtypes)
+            foreach (TypeInfo implementationType in definedtypes)
             {
-                Type ipresenterType = presenterType;
-                if (presenterType.BaseType != null && presenterType.BaseType.Name != "Object")
-                {
-                    ipresenterType = presenterType.BaseType;
-                }
-                else if (presenterType.ImplementedInterfaces != null)
-                {
-                    Type similarIpresenter = presenterType.ImplementedInterfaces.Where(ipresenter => ipresenter.Name.EndsWith("Presenter")).First();
-                    Type firstInterface = presenterType.ImplementedInterfaces.First();
-                    ipresenterType = (similarIpresenter != null) ? similarIpresenter : firstInterface;
-                }
+                Type serviceType = implementationType;
 
-                // 必須標記 Attribute 是哪一種才能加進collection
-                CustomAttributeData lifetime = presenterType.CustomAttributes.Where(attr => attrArr.Contains(attr.AttributeType)).LastOrDefault();
-                if (lifetime == null)
-                {
-                    continue;
-                }
+                if (implementationType.ImplementedInterfaces.Count() > 0)
+                    serviceType = implementationType.ImplementedInterfaces.FirstOrDefault(x => x.Name.EndsWith(implementationType.Name)) ?? implementationType.ImplementedInterfaces.First();
 
-                ServiceLifetime lifttime = (lifetime.AttributeType.Name == "SingletonAttribute") ? ServiceLifetime.Singleton : ServiceLifetime.Transient;
-                ServiceDescriptor descriptor = new ServiceDescriptor(ipresenterType, presenterType, lifttime);
+                else if (implementationType.BaseType != null && implementationType.BaseType != typeof(object))
+                    serviceType = implementationType.BaseType;
+
+                ServiceLifetime serviceLifetime = implementationType.CustomAttributes.Any(x => x.AttributeType == typeof(SingletonAttribute)) ? ServiceLifetime.Singleton : ServiceLifetime.Transient;
+                ServiceDescriptor descriptor = new ServiceDescriptor(serviceType, implementationType, serviceLifetime);
                 Add(descriptor);
             }
         }
